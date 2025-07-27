@@ -42,39 +42,40 @@ MAIN_TO_SUB = {
 @st.cache_resource
 def load_models():
     try:
+        # Hugging Face repo ID
         repo_id = "salyaprh/analyze-your-poem"
 
+        # Load tokenizer dari Hugging Face Hub
         tokenizer = DistilBertTokenizer.from_pretrained(
             repo_id,
             subfolder="poem_emotion_app_models/main_emotion_tokenizer"
         )
 
+        # Load main emotion classification model
         main_model = DistilBertForSequenceClassification.from_pretrained(
             repo_id,
             subfolder="poem_emotion_app_models/main_emotion_model"
         )
 
+        # Load sub-emotion multi-label classification model
         sub_model = DistilBertForSequenceClassification.from_pretrained(
             repo_id,
             subfolder="poem_emotion_app_models/sub_emotion_model"
         )
         sub_model.eval()
 
-        encoder_path = hf_hub_download(
-            repo_id=repo_id,
-            filename="poem_emotion_app_models/main_emotion_label_encoder.joblib"
-        )
-        main_encoder = joblib.load(encoder_path)
+        # Load label encoder dari file lokal di project
+        main_encoder = joblib.load("main_emotion_label_encoder.joblib")
 
+        # Load Gemini model (pastikan sudah setup Google API key)
         gemini_model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
         return tokenizer, main_model, main_encoder, sub_model, gemini_model
 
     except Exception as e:
-        st.error("❌ Failed to load models. Check Hugging Face repo and subfolder paths.")
+        st.error("❌ Failed to load models. Check Hugging Face subfolders or local files.")
         st.exception(e)
         return None, None, None, None, None
-
 
 tokenizer, main_model, main_encoder, sub_model, gemini_model = load_models()
 
